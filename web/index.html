@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+body, html {width: 100%; height: 100%; margin: 0; padding: 0}
+.row-container {display: flex; width: 100%; height: 100%; flex-direction: column; background-color: blue; overflow: hidden;}
+.first-row {background-color: lime; }
+.second-row { flex-grow: 1; border: none; margin: 0; padding: 0; }
+    </style>
+
+    <title>Sketchy</title>
+    
+    <script>
+      // Select the file for your display size here!
+      var psd = "3440x1440.psd";
+    
+    
+      var n = 0, wnd;
+      function iframeLoaded(pp) {
+        wnd = pp.contentWindow;
+        window.addEventListener("message", ppReady);
+      }
+
+      function ppReady(e) {
+        console.log(e);
+        
+        if (e.data == "done") {
+          n++;
+            if (n === 1){
+                console.log("Opening document");
+                var request = new XMLHttpRequest();
+                request.open("GET", "http://localhost:48135/web/" + psd, true);
+                request.responseType = "arraybuffer";
+                request.onload = function() {
+                    wnd.postMessage(request.response, "*");
+                }
+                request.send();
+            }
+            if (n === 2) {
+                console.log("Loading swatches");
+                var request = new XMLHttpRequest();
+                request.open("GET", "http://localhost:48135/web/swatches.aco", true);
+                request.responseType = "arraybuffer";
+                request.onload = function() {
+                    wnd.postMessage(request.response, "*");
+                }
+                request.send();
+            }
+            if (n === 3) {
+                console.log("Scaling canvas");
+                wnd.postMessage("app.UI.fitTheArea()", "*");
+            }
+        }
+        
+      }
+
+      function loaded(e) {
+        var ab = e.target.response;  // ArrayBuffer
+        wnd.postMessage(ab, "*");
+      }
+    </script>    
+  </head>  
+  <body>
+    <div class="row-container">
+        <iframe id="photopea"  class="second-row" src="https://www.photopea.com" style="width:fill; height fill; border:none;" onload="iframeLoaded(this)"/>
+    </div>
+  </body>
+</html>
